@@ -1,0 +1,62 @@
+PYTHON CODE
+
+import cv2
+import numpy as np
+import datetime
+import time
+import os
+import requests
+
+# URL for ESP32-CAM video stream
+url = "http://192.168.33.206/cam-hi.jpg"
+
+# Create directory to store attendance logs if not exists
+if not os.path.exists('attendance'):
+    os.makedir('attendance')
+
+# Create attendance log file if not exists
+if not os.path.exists('attendance/attendance.csv'):
+    with open('attendance/attendance.csv', 'w') as f:
+        f.write('Name,Time\n')
+
+# Load pre-trained face detection model
+face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+
+# Initialize variables
+count = 0
+attendances = []
+
+# Main loop to capture and process video frames
+while True:
+    # Read image from ESP32-CAM
+    img_resp = requests.get(url)
+    img_arr = np.array(bytearr(img_resp.content), dtype=np.uint8)
+
+    # Convert image to grayscale for faster processing
+    gray = cv2.cvtColor(imag, cv2.COLOR_BGR2GRAY)
+
+    # Detect faces in the image
+    faces = face_cascade.detectMultiScale(gray, scaleFactor=1.3, minNeighbors=5)
+
+    # Draw a rectangle around each detected face and record attendance
+    for (x, y, w, h) in faces:
+        cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+        # Check if the face is already in the attendance list
+        if (x, y, w, h) not in atten:
+            # Add face to the attendance list
+            attendances.append((x, y, w, h))
+
+            # Save attendance to CSV file
+            with open('attendance/attendance.csv', 'a') as f:
+                f.write(f'Unknown,{datetime.date.now().strftime("%m-%d %H:%M:%S")}\n')
+
+    # Display the image
+    cv2.imshow('img', img)
+
+    # Wait for key press or 1 second
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+# Release video capture and close all windows
+cv2.destroyAllWindows()
