@@ -1,6 +1,3 @@
-ESP 32 CAM PROGRAM
-
-
 #include <WebServer.h>
 #include <WiFi.h>
 #include <esp32cam.h>
